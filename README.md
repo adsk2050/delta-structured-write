@@ -40,17 +40,59 @@ anything. The first asks what regeneration does to fields nobody asked about;
 the second asks whether regeneration reliably fixes the fields that were
 rejected.
 
+### Getting started
+
 ```bash
 uv sync
-uv run python scripts/smoke.py --offline        # no API calls; asserts the invariants
+cp .env.example .env        # then paste a Gemini key into it
+```
+
+A free key comes from [aistudio.google.com/apikey](https://aistudio.google.com/apikey),
+no card required. **Everything below the `--offline` line needs one; everything
+at or above it does not**, so you can check the whole thing out before deciding
+whether to spend anything.
+
+> ### Two things that will otherwise cost you a day
+>
+> **The free tier is 20 requests per day, per model.** Measured, from the API's
+> own 429 body — not the 1,500/day every secondary source claims. Every runner
+> prints its budget with `--dry-run` before spending anything, and all three are
+> safe to interrupt: completed work is skipped, or replayed from the log, and
+> never re-bought.
+>
+> **The quota resets at midnight Pacific, which is 12:30 PM IST** — not local
+> midnight. A run started in the morning is still spending yesterday's bucket.
+
+### Running it
+
+```bash
+# No API calls. Asserts every invariant the experiments rely on.
+uv run python scripts/smoke.py --offline
+uv run python scripts/run_retry.py --offline
+uv run python scripts/run_agentic.py --offline
+
+# No API calls. Prints the call count, token count and bill for a design.
 uv run python scripts/run_integrity.py --design thin --dry-run
+uv run python scripts/run_agentic.py --dry-run --sizes medium --turns 40
+
+# ---- everything below here spends quota ----
+
+# 1. Does regeneration corrupt what you did not touch?   (20 calls)
 uv run python scripts/run_integrity.py --design thin
 uv run python scripts/analyse.py
 
-uv run python scripts/run_retry.py --offline     # no API calls; asserts the invariants
+# 2. Does regeneration reliably fix what you did?        (~12 calls)
 uv run python scripts/run_retry.py --sizes medium --seeds 3
 uv run python scripts/analyse_retry.py
+
+# 3. Does any of that survive an accumulating context?   (20 calls/day x 4)
+uv run python scripts/run_agentic.py --sizes medium --turns 10
+uv run python scripts/analyse_agentic.py
 ```
+
+Experiment 3 is the live one, and it is run in daily phases — bump `--turns` by
+10 each day and prior turns replay from the log for free. `CHECKPOINT.md` has
+the schedule and the current state.
 
 | module | what it is |
 |---|---|

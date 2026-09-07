@@ -23,7 +23,9 @@ load_dotenv(REPO_ROOT / ".env")
 # --------------------------------------------------------------------------
 # Model choice
 # --------------------------------------------------------------------------
-# gemini-3.6-flash, direct via the Gemini API. Three reasons, in order:
+# gemini-3.5-flash, direct via the Gemini API (see MODEL below; the reasons
+# below are why a model of this family, the table after them is why this one).
+# Three reasons, in order:
 #
 # 1. STABLE AND SUPPORTED. No `-preview` suffix, so it will not be swapped under
 #    a multi-day experiment — and it is the model Google's own API names as the
